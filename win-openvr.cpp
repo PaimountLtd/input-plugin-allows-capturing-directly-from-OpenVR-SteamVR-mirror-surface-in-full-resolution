@@ -377,8 +377,10 @@ static void win_openvr_tick(void *data, float seconds)
 
 static double round_crop_values(double value)
 {
-	double ret = (int)(value / crop_step + .5); 
-    return (double)ret * crop_step;
+	value = value * 100.0f;
+	value = round(value);
+	value = value / 100.0f;
+	return value;
 }
 
 static bool crop_preset_changed(obs_properties_t *props, obs_property_t *p, obs_data_t *s)
@@ -392,7 +394,7 @@ static bool crop_preset_changed(obs_properties_t *props, obs_property_t *p, obs_
 		return false;
 
 	bool flip = obs_data_get_bool(s, "righteye");
-	
+
 	// Mirror preset horizontally if right eye is captured
 	obs_data_set_double(s, "cropleft", round_crop_values( flip ? 1 - croppresets[sel].right : croppresets[sel].left));
 	obs_data_set_double(s, "cropright", round_crop_values( flip ? 1 - croppresets[sel].left : croppresets[sel].right));
