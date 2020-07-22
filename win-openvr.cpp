@@ -40,6 +40,7 @@ struct croppreset {
 	float right;
 };
 std::vector<croppreset> croppresets;
+double crop_step = 0.01;
 
 struct win_openvr {
 	obs_source_t *source;
@@ -374,6 +375,12 @@ static void win_openvr_tick(void *data, float seconds)
 	}
 }
 
+static double round_crop_values(double value)
+{
+	double ret = (int)(value / crop_step + .5); 
+    return (double)ret * crop_step;
+}
+
 static bool crop_preset_changed(obs_properties_t *props, obs_property_t *p, obs_data_t *s)
 {
 	UNUSED_PARAMETER(props);
@@ -385,12 +392,12 @@ static bool crop_preset_changed(obs_properties_t *props, obs_property_t *p, obs_
 		return false;
 
 	bool flip = obs_data_get_bool(s, "righteye");
-
+	
 	// Mirror preset horizontally if right eye is captured
-	obs_data_set_double(s, "cropleft", flip ? 1 - croppresets[sel].right : croppresets[sel].left);
-	obs_data_set_double(s, "cropright", flip ? 1 - croppresets[sel].left : croppresets[sel].right);
-	obs_data_set_double(s, "croptop", croppresets[sel].top);
-	obs_data_set_double(s, "cropbottom", croppresets[sel].bottom);
+	obs_data_set_double(s, "cropleft", round_crop_values( flip ? 1 - croppresets[sel].right : croppresets[sel].left));
+	obs_data_set_double(s, "cropright", round_crop_values( flip ? 1 - croppresets[sel].left : croppresets[sel].right));
+	obs_data_set_double(s, "croptop", round_crop_values(croppresets[sel].top));
+	obs_data_set_double(s, "cropbottom", round_crop_values(croppresets[sel].bottom));
 
 	return true;
 }
@@ -441,13 +448,13 @@ static obs_properties_t *win_openvr_properties(void *data)
 	}
 	obs_property_set_modified_callback(p, crop_preset_changed);
 
-	p = obs_properties_add_float_slider(props, "croptop", obs_module_text("CropTop"), 0.0, 0.5, 0.01);
+	p = obs_properties_add_float_slider(props, "croptop", obs_module_text("CropTop"), 0.0, 0.5, crop_step);
 	obs_property_set_modified_callback(p, crop_preset_manual);
-	p = obs_properties_add_float_slider(props, "cropbottom", obs_module_text("CropBottom"), 0.5, 1.0, 0.01);
+	p = obs_properties_add_float_slider(props, "cropbottom", obs_module_text("CropBottom"), 0.5, 1.0, crop_step);
 	obs_property_set_modified_callback(p, crop_preset_manual);
-	p = obs_properties_add_float_slider(props, "cropleft", obs_module_text("CropLeft"), 0.0, 0.5, 0.01);
+	p = obs_properties_add_float_slider(props, "cropleft", obs_module_text("CropLeft"), 0.0, 0.5, crop_step);
 	obs_property_set_modified_callback(p, crop_preset_manual);
-	p = obs_properties_add_float_slider(props, "cropright", obs_module_text("CropRight"), 0.5, 1.0, 0.01);
+	p = obs_properties_add_float_slider(props, "cropright", obs_module_text("CropRight"), 0.5, 1.0, crop_step);
 	obs_property_set_modified_callback(p, crop_preset_manual);
 
 	return props;
