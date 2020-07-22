@@ -406,6 +406,9 @@ static bool crop_preset_manual(obs_properties_t *props, obs_property_t *p, obs_d
 {
 	UNUSED_PARAMETER(props);
 	UNUSED_PARAMETER(p);
+	
+	//workaround to not change Preset back to "none"
+	return false;
 
 	if (obs_data_get_int(s, "croppreset") != 0)
 	{
