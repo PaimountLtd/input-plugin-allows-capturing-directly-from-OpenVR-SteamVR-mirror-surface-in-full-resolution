@@ -309,8 +309,7 @@ static void win_openvr_render(void *data, gs_effect_t *effect)
 
 	if (context->active && !context->initialized)
 	{
-		// Active & want to render but not initialized - attempt to init
-		win_openvr_init(data);
+		return;
 	}
 
 	if (!context->texture || !context->active)
