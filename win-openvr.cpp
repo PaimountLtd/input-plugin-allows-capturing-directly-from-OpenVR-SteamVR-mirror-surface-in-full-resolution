@@ -371,6 +371,11 @@ static void win_openvr_tick(void *data, float seconds)
 			win_openvr_init(data);
 		}
 
+	} else {
+		if (context->active)
+		{
+			win_openvr_init(data);
+		}
 	}
 }
 
