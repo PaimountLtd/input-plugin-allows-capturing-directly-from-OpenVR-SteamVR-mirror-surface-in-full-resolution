@@ -310,13 +310,13 @@ static void win_openvr_render(void *data, gs_effect_t *effect)
 
 	if (context->active && !context->initialized)
 	{
-		return;
+		// Active & want to render but not initialized - attempt to init
+		win_openvr_init(data);
 	}
 
 	if (!context->texture || !context->active)
 	{
-		// Active & want to render but not initialized - attempt to init
-		win_openvr_init(data);
+		return;
 	}
 
 	// Crop from full size mirror texture
