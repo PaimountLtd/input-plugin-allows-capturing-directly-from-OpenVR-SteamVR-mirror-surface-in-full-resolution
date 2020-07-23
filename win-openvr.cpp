@@ -82,7 +82,8 @@ static void win_openvr_init(void *data, bool forced = false)
 
 	// Dont attempt to init OVR too often due to memory leak in VR_Init
 	// TODO: OpenVR v1.10.30 should no longer have the memory leak
-	if (GetTickCount() - 1000 < context->lastCheckTick && !forced)
+	// restored timeout to 5s as vr::VR_Init had a performance issue 
+	if (GetTickCount() - 5000 < context->lastCheckTick && !forced)
 	{
 		return;
 	}
@@ -314,7 +315,8 @@ static void win_openvr_render(void *data, gs_effect_t *effect)
 
 	if (!context->texture || !context->active)
 	{
-		return;
+		// Active & want to render but not initialized - attempt to init
+		win_openvr_init(data);
 	}
 
 	// Crop from full size mirror texture
@@ -371,11 +373,6 @@ static void win_openvr_tick(void *data, float seconds)
 			win_openvr_init(data);
 		}
 
-	} else {
-		if (context->active)
-		{
-			win_openvr_init(data);
-		}
 	}
 }
 
