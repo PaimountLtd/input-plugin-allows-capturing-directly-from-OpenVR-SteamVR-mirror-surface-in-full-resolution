@@ -430,14 +430,6 @@ static void win_openvr_tick(void *data, float seconds)
 	}
 }
 
-static double round_crop_values(double value)
-{
-	value = value * 100.0f;
-	value = round(value);
-	value = value / 100.0f;
-	return value;
-}
-
 static bool crop_preset_changed(obs_properties_t *props, obs_property_t *p, obs_data_t *s)
 {
 	UNUSED_PARAMETER(props);
@@ -452,10 +444,10 @@ static bool crop_preset_changed(obs_properties_t *props, obs_property_t *p, obs_
 
 	// Mirror preset horizontally if right eye is captured
 	const crop &crop = croppresets[sel].crop;
-	obs_data_set_double(s, "cropleft", crop.left);
-	obs_data_set_double(s, "cropright", crop.right);
-	obs_data_set_double(s, "croptop", crop.top);
-	obs_data_set_double(s, "cropbottom", crop.bottom);
+	obs_data_set_int(s, "cropleft", crop.left);
+	obs_data_set_int(s, "cropright", crop.right);
+	obs_data_set_int(s, "croptop", crop.top);
+	obs_data_set_int(s, "cropbottom", crop.bottom);
 
 	return true;
 }
