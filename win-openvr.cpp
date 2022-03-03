@@ -3,7 +3,9 @@
 // by Keijo "Kegetys" Ruotsalainen, http://www.kegetys.fi
 //
 
-#define _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_WARNINGS
+	#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <obs-module.h>
 #include <graphics/image-file.h>
@@ -65,7 +67,7 @@ struct win_openvr {
 
 	ID3D11Texture2D *texCrop;
 
-	DWORD lastCheckTick;
+	uint64_t lastCheckTick;
 
 	// Set in win_openvr_init, 0 until then.
 	unsigned int device_width;
@@ -229,7 +231,7 @@ static void win_openvr_init(void *data, bool forced = false)
 
 	obs_enter_graphics();
 	gs_texture_destroy(context->texture);
-	context->texture = gs_texture_open_shared((uint32_t)handle);
+	context->texture = gs_texture_open_shared(static_cast<uint32_t>((uint64_t)handle));
 	obs_leave_graphics();
 
 	context->initialized = true;
@@ -292,14 +294,14 @@ static void win_openvr_update(void *data, obs_data_t *settings)
 	context->righteye = obs_data_get_bool(settings, "righteye");
 
 	if (context->righteye) {
-		context->crop.left = obs_data_get_int(settings, "cropleft");
-		context->crop.right = obs_data_get_int(settings, "cropright");
+		context->crop.left = (int)obs_data_get_int(settings, "cropleft");
+		context->crop.right = (int)obs_data_get_int(settings, "cropright");
 	} else {
-		context->crop.left = obs_data_get_int(settings, "cropright");
-		context->crop.right = obs_data_get_int(settings, "cropleft");
+		context->crop.left = (int)obs_data_get_int(settings, "cropright");
+		context->crop.right = (int)obs_data_get_int(settings, "cropleft");
 	}
-	context->crop.top = obs_data_get_int(settings, "croptop");
-	context->crop.bottom = obs_data_get_int(settings, "cropbottom");
+	context->crop.top = (int)obs_data_get_int(settings, "croptop");
+	context->crop.bottom = (int)obs_data_get_int(settings, "cropbottom");
 
 	if (context->initialized) {
 		win_openvr_deinit(data);
@@ -440,7 +442,7 @@ static bool crop_preset_changed(obs_properties_t *props, obs_property_t *p, obs_
 	if (sel >= croppresets.size() || sel < 0)
 		return false;
 
-	bool flip = obs_data_get_bool(s, "righteye");
+	//bool flip = obs_data_get_bool(s, "righteye");
 
 	// Mirror preset horizontally if right eye is captured
 	const crop &crop = croppresets[sel].crop;
@@ -452,24 +454,22 @@ static bool crop_preset_changed(obs_properties_t *props, obs_property_t *p, obs_
 	return true;
 }
 
-static bool crop_preset_manual(obs_properties_t *props, obs_property_t *p,
-			       obs_data_t *s)
+static bool crop_preset_manual(obs_properties_t */*props*/, obs_property_t* /*p*/, obs_data_t* /*s*/)
 {
-	UNUSED_PARAMETER(props);
-	UNUSED_PARAMETER(p);
 	
 	//workaround to not change Preset back to "none"
 	return false;
 
-	if (obs_data_get_int(s, "croppreset") != 0) {
+	/*if (obs_data_get_int(s, "croppreset") != 0)
+	{
 		// Slider moved manually, disable preset
 		obs_data_set_int(s, "croppreset", 0);
 		return true;
 	}
-	return false;
+	return false;*/
 }
 
-static bool crop_preset_flip(obs_properties_t *props, obs_property_t *p,
+static bool crop_preset_flip(obs_properties_t *props, obs_property_t */*p*/,
 			     obs_data_t *s)
 {
 	bool flip = obs_data_get_bool(s, "righteye");
@@ -482,7 +482,7 @@ static bool crop_preset_flip(obs_properties_t *props, obs_property_t *p,
 	return true;
 }
 
-static bool button_reset_callback(obs_properties_t *props, obs_property_t *p,
+static bool button_reset_callback(obs_properties_t */*props*/, obs_property_t*/*p*/,
 				  void *data)
 {
 	struct win_openvr *context = (win_openvr *)data;
@@ -513,7 +513,7 @@ static obs_properties_t *win_openvr_properties(void *data)
 				    OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_INT);
 	obs_property_list_add_int(p, "none", 0);
 	int i = 1;
-	for (const auto c : croppresets) {
+	for (const auto& c : croppresets) {
 		obs_property_list_add_int(p, c.name, i++);
 	}
 	obs_property_set_modified_callback(p, crop_preset_changed);
